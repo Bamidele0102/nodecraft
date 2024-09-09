@@ -1,0 +1,8 @@
+node_modules/
+dist/
+coverage/
+.env
+Dockerfile
+docker-compose.yml
+Jenkinsfile
+.eslintrc.js

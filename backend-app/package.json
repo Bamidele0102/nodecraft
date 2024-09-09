@@ -1,0 +1,54 @@
+{
+  "name": "backend-app",
+  "version": "1.0.0",
+  "description": "A backend API built with Node.js, MongoDB, Docker, and CI/CD pipeline using Jenkins.",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js",
+    "test": "mocha",
+    "coverage": "nyc mocha",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Bamidele0102/nodecraft/backend-app.git"
+  },
+  "keywords": [
+    "nodejs",
+    "express",
+    "mongodb",
+    "docker",
+    "jenkins",
+    "ci/cd",
+    "api",
+    "backend"
+  ],
+  "author": "Idowu Olayiwola Bamidele",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "bcrypt": "^5.1.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "express-rate-limit": "^6.7.0",
+    "helmet": "^7.0.0",
+    "jsonwebtoken": "^9.0.0",
+    "mongoose": "^7.3.1",
+    "winston": "^3.9.0"
+  },
+  "devDependencies": {
+    "chai": "^4.3.7",
+    "eslint": "^8.57.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-plugin-import": "^2.30.0",
+    "mocha": "^10.2.0",
+    "nodemon": "^3.0.1",
+    "nyc": "^15.1.0",
+    "supertest": "^6.3.3"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
