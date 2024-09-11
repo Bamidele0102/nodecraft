@@ -14,7 +14,8 @@ mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopol
 // Routes
 app.use('/api/items', itemsRoute);
 
-
+// Health check
+// app.get('/health', (req, res) => res.status(200).send('API is healthy'));
 
 const port = process.env.PORT || 3000;
 app.listen(port, () => console.log(`Server running on port ${port}`));
