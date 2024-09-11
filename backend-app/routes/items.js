@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const Item = require('../models/Item');
+const Item = require('../models/Items');
 const jwt = require('jsonwebtoken');
 
 // Middleware for authentication
