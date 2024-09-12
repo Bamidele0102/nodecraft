@@ -6,6 +6,7 @@ const authMiddleware = require('./middleware/auth');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
+const logger = require('./logger');
 const rateLimit = require('express-rate-limit');
 const authRoute = require('./routes/auth');
 const { swaggerUi, specs } = require('./swagger');
@@ -15,6 +16,9 @@ app.use(express.json());
 app.use(cors());
 app.use(helmet());
 app.use(morgan('combined'));
+
+// Logging middleware
+app.use(morgan('combined', { stream: { write: message => logger.info(message.trim()) } }));
 
 // Rate Limiting Configuration
 const limiter = rateLimit({
