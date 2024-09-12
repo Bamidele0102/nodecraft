@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 require('dotenv').config();
+const validateEnv = require('./config/validationEnv');
 const itemsRoute = require('./routes/items');
 const authMiddleware = require('./middleware/auth');
 const cors = require('cors');
@@ -26,6 +27,9 @@ const logger = winston.createLogger({
         new winston.transports.File({ filename: 'app.log' })
     ]
 });
+
+// Validate environment variables
+validateEnv();
 
 // Rate Limiting Configuration
 const limiter = rateLimit({
