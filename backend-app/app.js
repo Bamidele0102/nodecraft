@@ -7,7 +7,8 @@ const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
-const auth = require('./middleware/auth');
+const authRoute = require('./routes/auth');
+const { swaggerUi, specs } = require('./swagger');
 
 const app = express();
 app.use(express.json());
@@ -30,8 +31,11 @@ mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopol
     .then(() => console.log('Connected to MongoDB'))
     .catch(err => console.log(err));
 
+// Swagger documentation route
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
+
 // Routes
-app.use('/api/auth', authRoute);
+app.use('/api/auth', authMiddleware, limiter, authRoute);
 app.use('/api/items', authMiddleware, limiter, itemsRoute);
 
 // Health check
