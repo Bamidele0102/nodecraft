@@ -7,6 +7,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
+const auth = require('./middleware/auth');
 
 const app = express();
 app.use(express.json());
@@ -30,6 +31,7 @@ mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopol
     .catch(err => console.log(err));
 
 // Routes
+app.use('/api/auth', authRoute);
 app.use('/api/items', authMiddleware, limiter, itemsRoute);
 
 // Health check
