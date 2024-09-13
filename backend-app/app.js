@@ -11,6 +11,7 @@ const winston = require('winston');
 const rateLimit = require('express-rate-limit');
 const authRoute = require('./routes/auth');
 const { swaggerUi, specs } = require('./swagger');
+const envVars = require('./config/validationEnv');
 
 const app = express();
 app.use(express.json());
@@ -29,7 +30,7 @@ const logger = winston.createLogger({
 });
 
 // Validate environment variables
-validateEnv();
+envVars;
 
 // Rate Limiting Configuration
 const limiter = rateLimit({
