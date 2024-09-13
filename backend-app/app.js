@@ -1,7 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
 require('dotenv').config();
-// const envVars = require('./config/validationEnv');
 const itemsRoute = require('./routes/items');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -12,12 +11,21 @@ const authRoute = require('./routes/auth');
 const { swaggerUi, specs } = require('./swagger');
 const envVars = require('./config/validationEnv');
 const auth = require('./middleware/auth');
+const path = require('path');
 
 const app = express();
 app.use(express.json());
 app.use(cors());
 app.use(helmet());
 app.use(morgan('combined'));
+
+// Serve static files from the 'public' directory
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Serve the favicon
+app.get('/favicon.ico', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'favicon.ico'));
+});
 
 // Logger Middleware
 const logger = winston.createLogger({
@@ -51,11 +59,16 @@ mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopol
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 
 // Routes
-app.use('/api/auth', auth, limiter, authRoute);
+app.use('/api/auth', limiter, authRoute);
 app.use('/api/items', auth, limiter, itemsRoute);
 
 // Health check
 app.get('/health', (req, res) => res.status(200).send('API is healthy'));
+
+// Root route
+app.get('/', (req, res) => {
+    res.send('Welcome to the API');
+});
 
 // Error handling middleware
 app.use((err, req, res, next) => {
