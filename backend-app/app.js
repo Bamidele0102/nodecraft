@@ -3,7 +3,6 @@ const mongoose = require('mongoose');
 require('dotenv').config();
 // const envVars = require('./config/validationEnv');
 const itemsRoute = require('./routes/items');
-const auth = require('./middleware/auth');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
@@ -12,6 +11,7 @@ const rateLimit = require('express-rate-limit');
 const authRoute = require('./routes/auth');
 const { swaggerUi, specs } = require('./swagger');
 const envVars = require('./config/validationEnv');
+const auth = require('./middleware/auth');
 
 const app = express();
 app.use(express.json());
