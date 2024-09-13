@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const itemController = require('../controllers/itemController');
-const validationMiddleware = require('../middleware/validation');
+const { validateItem } = require('../middleware/validation');
 
 
 /**
@@ -84,7 +84,7 @@ router.get('/', itemController.getItems);
  *       400:
  *         description: Bad request
  */
-router.post('/', validationMiddleware, itemController.createItem);
+router.post('/', validateItem, itemController.createItem);
 
 
 /**
@@ -118,7 +118,7 @@ router.post('/', validationMiddleware, itemController.createItem);
  *       400:
  *         description: Bad request
  */
-router.put('/:id', validationMiddleware, itemController.updateItem);
+router.put('/:id', validateItem, itemController.updateItem);
 
 
 /**
