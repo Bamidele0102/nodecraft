@@ -1,9 +1,9 @@
 const express = require('express');
 const mongoose = require('mongoose');
 require('dotenv').config();
-const validateEnv = require('./config/validationEnv');
+// const envVars = require('./config/validationEnv');
 const itemsRoute = require('./routes/items');
-const authMiddleware = require('./middleware/auth');
+const auth = require('./middleware/auth');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
@@ -51,8 +51,8 @@ mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopol
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 
 // Routes
-app.use('/api/auth', authMiddleware, limiter, authRoute);
-app.use('/api/items', authMiddleware, limiter, itemsRoute);
+app.use('/api/auth', auth, limiter, authRoute);
+app.use('/api/items', auth, limiter, itemsRoute);
 
 // Health check
 app.get('/health', (req, res) => res.status(200).send('API is healthy'));
