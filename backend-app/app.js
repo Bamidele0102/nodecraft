@@ -14,6 +14,9 @@ const auth = require('./middleware/auth');
 const path = require('path');
 
 const app = express();
+
+console.log('JWT Secret for registration:', process.env.JWT_SECRET);
+
 app.use(express.json());
 app.use(cors());
 app.use(helmet());
@@ -70,11 +73,11 @@ app.get('/', (req, res) => {
     res.send('Welcome to the API');
 });
 
+
 // Error handling middleware
 app.use((err, req, res, next) => {
     logger.error(err.message, err);
     res.status(500).send('Something went wrong');
 });
 
-const port = process.env.PORT || 3000;
-app.listen(port, () => console.log(`Server running on port ${port}`));
+module.exports = app;
