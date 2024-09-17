@@ -1,4 +1,4 @@
-const Item = require('../models/Items'); // Ensure the model name matches the file name
+const Item = require('../models/Items');
 
 exports.getItems = async (req, res) => {
     try {
@@ -20,7 +20,11 @@ exports.createItem = async (req, res) => {
         const newItem = await item.save();
         res.status(201).json(newItem);
     } catch (err) {
-        res.status(400).json({ message: err.message });
+        if (err.code === 11000) { // Duplicate key error code
+            res.status(400).json({ message: 'Item with this name already exists' });
+        } else {
+            res.status(400).json({ message: err.message });
+        }
     }
 };
 
