@@ -2,4 +2,7 @@ venv/
 node_modules/
 .env
 app.log
-
+items.bson
+items.metadata.json
+users.bson
+users.metadata.json
