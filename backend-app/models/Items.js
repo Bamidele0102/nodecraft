@@ -4,7 +4,7 @@ const itemSchema = new mongoose.Schema({
     name: {
         type: String,
         required: true,
-        unique: true // Add unique constraint
+        unique: true // Added unique constraint
     },
     quantity: {
         type: Number,

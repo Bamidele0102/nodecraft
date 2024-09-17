@@ -50,7 +50,7 @@ exports.deleteItem = async (req, res) => {
         const item = await Item.findById(req.params.id);
         if (!item) return res.status(404).json({ message: 'Item not found' });
 
-        await item.remove();
+        await Item.deleteOne({ _id: req.params.id }); // Use deleteOne method
         res.json({ message: 'Item deleted' });
     } catch (err) {
         res.status(500).json({ message: err.message });
