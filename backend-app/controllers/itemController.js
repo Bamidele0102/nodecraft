@@ -1,5 +1,4 @@
-const Item = require('../models/Items');
-
+const Item = require('../models/Items'); // Ensure the model name matches the file name
 
 exports.getItems = async (req, res) => {
     try {
@@ -10,12 +9,12 @@ exports.getItems = async (req, res) => {
     }
 };
 
-
 exports.createItem = async (req, res) => {
     const item = new Item({
         name: req.body.name,
         quantity: req.body.quantity,
         price: req.body.price,
+        description: req.body.description // Include the description field
     });
     try {
         const newItem = await item.save();
@@ -25,17 +24,15 @@ exports.createItem = async (req, res) => {
     }
 };
 
-
 exports.updateItem = async (req, res) => {
     try {
         const item = await Item.findById(req.params.id);
         if (!item) return res.status(404).json({ message: 'Item not found' });
 
-
         item.name = req.body.name || item.name;
         item.quantity = req.body.quantity || item.quantity;
         item.price = req.body.price || item.price;
-
+        item.description = req.body.description || item.description; // Include the description field
 
         const updatedItem = await item.save();
         res.json(updatedItem);
@@ -44,12 +41,10 @@ exports.updateItem = async (req, res) => {
     }
 };
 
-
 exports.deleteItem = async (req, res) => {
     try {
         const item = await Item.findById(req.params.id);
         if (!item) return res.status(404).json({ message: 'Item not found' });
-
 
         await item.remove();
         res.json({ message: 'Item deleted' });

@@ -38,7 +38,6 @@ router.post('/login', async (req, res) => {
         const isMatch = await user.comparePassword(password);
         if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
 
-        console.log('JWT Secret for registration:', process.env.JWT_SECRET);
 
         const payload = { user: { id: user.id } };
         const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
@@ -49,7 +48,6 @@ router.post('/login', async (req, res) => {
         res.status(500).json({ message: err.message });
     }
 });
-
 
 
 module.exports = router;
