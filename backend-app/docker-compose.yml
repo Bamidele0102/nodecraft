@@ -1,7 +1,7 @@
 version: '3.8'
 services:
   app:
-    image: bamidele0102/backend-app:latest  # Use your Docker Hub image
+    image: bamidele0102/backend-app:v1.0  # Use your Docker Hub image with the specified tag
     build:
       context: .
       dockerfile: Dockerfile  # Points to the Dockerfile in the root directory
@@ -21,4 +21,3 @@ services:
 networks:
   app-network:
     driver: bridge  # Bridge network for internal communication
-
