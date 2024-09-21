@@ -1,0 +1,109 @@
+pipeline {
+    agent any
+
+    tools {
+        nodejs 'NodeJS 14'
+    }
+
+    environment {
+        // Pull sensitive data from Jenkins credentials
+        MONGO_URI = credentials('MONGO_URI')
+        JWT_SECRET = credentials('JWT_SECRET')
+        PORT = '3000'
+    }
+
+    stages {
+        stage('Clone Repository') {
+            steps {
+                // Integrate GitHub webhook for automatic builds
+                git branch: 'main', url: 'https://github.com/your-repo/your-nodejs-app.git'
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                // Install Node.js dependencies
+                sh 'npm install'
+            }
+        }
+
+        stage('Run Unit and Integration Tests') {
+            steps {
+                // Run both unit and integration tests
+                sh 'npm test'
+                // To separate unit and integration tests, use:
+                // sh 'npm run test:unit && npm run test:integration'
+            }
+            post {
+                always {
+                    // Publish test results for Jenkins
+                    junit 'test-results/*.xml'
+                }
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    dockerImage = docker.build("your-dockerhub-username/your-nodejs-app:${env.BUILD_ID}")
+                }
+            }
+        }
+
+        stage('Push Docker Image to Docker Hub') {
+            steps {
+                script {
+                    docker.withRegistry('https://index.docker.io/v1/', 'docker-hub-credentials') {
+                        dockerImage.push()
+                        dockerImage.push('latest')  // Tagging 'latest' for production
+                    }
+                }
+            }
+        }
+
+        stage('Deploy to Production Server') {
+            steps {
+                sshagent(credentials: ['your-ssh-credentials-id']) {
+                    sh '''
+                    ssh -o StrictHostKeyChecking=no user@100.25.28.252 << EOF
+                    docker pull your-dockerhub-username/your-nodejs-app:${env.BUILD_ID}
+                    docker stop your-nodejs-app || true
+                    docker rm your-nodejs-app || true
+                    docker run -d --name your-nodejs-app -p 3000:3000 --env-file .env your-dockerhub-username/your-nodejs-app:${env.BUILD_ID}
+                    EOF
+                    '''
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            // Email notification for successful builds
+            emailext (
+                subject: "SUCCESS: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'",
+                body: """
+                Good news! The build succeeded.
+                - Job: ${env.JOB_NAME}
+                - Build Number: ${env.BUILD_NUMBER}
+                - Build URL: ${env.BUILD_URL}
+                """,
+                recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']]
+            )
+        }
+
+        failure {
+            // Email notification for failed builds
+            emailext (
+                subject: "FAILURE: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'",
+                body: """
+                Unfortunately, the build failed.
+                - Job: ${env.JOB_NAME}
+                - Build Number: ${env.BUILD_NUMBER}
+                - Build URL: ${env.BUILD_URL}
+                """,
+                recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']]
+            )
+        }
+    }
+}
