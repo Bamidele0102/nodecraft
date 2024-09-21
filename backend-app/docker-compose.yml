@@ -1,30 +1,24 @@
-version: '3'
+version: '3.8'
 services:
   app:
-    image: nodecraft-backend-app:latest  # You can use a tag like 'latest' or 'production'
+    image: bamidele0102/backend-app:latest  # Use your Docker Hub image
     build:
       context: .
       dockerfile: Dockerfile  # Points to the Dockerfile in the root directory
-    container_name: nodecraft-backend-app
+    container_name: backend-app
     env_file:
       - .env  # Reference the environment variables from the .env file
     ports:
-      - "${PORT}:3000"  # Map the container port to the host port, based on the PORT variable in .env
+      - "3000:3000"  # Map the container port directly to port 3000 on the host
     restart: unless-stopped  # Restarts the container if it crashes
     environment:
       - NODE_ENV=production
-      - MONGO_URI=${MONGO_URI}
+      - MONGO_URI=${MONGO_URI}  # Use the MongoDB Atlas URI
       - JWT_SECRET=${JWT_SECRET}
-    volumes:
-      - .:/usr/src/app  # Mounts your local code into the container for development
-    depends_on:
-      - mongo-atlas
     networks:
-      - app-network
+      - app-network  # Connect to the app-network defined below
 
 networks:
   app-network:
-    driver: bridge
-
-# MongoDB Atlas doesn't need a service here since it's managed remotely
+    driver: bridge  # Bridge network for internal communication
 
