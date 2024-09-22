@@ -3,7 +3,6 @@ const router = express.Router();
 const itemController = require('../controllers/itemController');
 const { validateItem } = require('../middleware/validation');
 
-
 /**
  * @swagger
  * components:
@@ -34,14 +33,12 @@ const { validateItem } = require('../middleware/validation');
  *         price: 100
  */
 
-
 /**
  * @swagger
  * tags:
  *   name: Items
  *   description: The items managing API
  */
-
 
 /**
  * @swagger
@@ -60,7 +57,6 @@ const { validateItem } = require('../middleware/validation');
  *                 $ref: '#/components/schemas/Item'
  */
 router.get('/', itemController.getItems);
-
 
 /**
  * @swagger
@@ -86,6 +82,30 @@ router.get('/', itemController.getItems);
  */
 router.post('/', validateItem, itemController.createItem);
 
+/**
+ * @swagger
+ * /api/items/{id}:
+ *   get:
+ *     summary: Get an item by ID
+ *     tags: [Items]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The item id
+ *     responses:
+ *       200:
+ *         description: The item description by id
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Item'
+ *       404:
+ *         description: The item was not found
+ */
+router.get('/:id', itemController.getItemById);
 
 /**
  * @swagger
@@ -120,7 +140,6 @@ router.post('/', validateItem, itemController.createItem);
  */
 router.put('/:id', validateItem, itemController.updateItem);
 
-
 /**
  * @swagger
  * /api/items/{id}:
@@ -141,6 +160,5 @@ router.put('/:id', validateItem, itemController.updateItem);
  *         description: The item was not found
  */
 router.delete('/:id', itemController.deleteItem);
-
 
 module.exports = router;

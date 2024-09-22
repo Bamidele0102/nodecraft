@@ -1,12 +1,21 @@
 const app = require('./app');
-const port = process.env.PORT || 3000;
+const logger = require('./utils/logger');
 
-app.listen(port, () => {
-    console.log(`Server running on port ${port}`);
+const port = process.env.PORT || 3000;
+const server = app.listen(port, () => {
+  logger.info(`Server running on port ${port}`);
 });
 
-// Global handler for unhandled promise rejections
+// Handle unhandled promise rejections
 process.on('unhandledRejection', (reason, promise) => {
-    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
-    // Application specific logging, throwing an error, or other logic here
+  logger.error(`Unhandled Rejection at: ${promise}, reason: ${reason}`);
+  server.close(() => process.exit(1));
+});
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  logger.info('SIGTERM received. Shutting down gracefully...');
+  server.close(() => {
+    logger.info('Process terminated');
+  });
 });
