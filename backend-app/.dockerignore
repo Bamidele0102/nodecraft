@@ -54,3 +54,11 @@ __tests__/
 README.md
 README.txt
 *.md
+
+# Ignore test files
+tests/integration/app.test.mjs
+tests/integration/item.test.mjs
+tests/unit/itemController.test.js
+# Add any other unnecessary files/folders here
+.DS_Store  # MacOS
+Thumbs.db  # Windows
