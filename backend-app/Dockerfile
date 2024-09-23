@@ -13,6 +13,9 @@ RUN npm install
 # Copy the rest of the application
 COPY . .
 
+# Ensure test files are copied
+COPY tests ./tests
+
 # Run tests (the build will fail if tests do not pass)
 RUN npm test
 
