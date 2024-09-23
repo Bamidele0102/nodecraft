@@ -1,5 +1,56 @@
+# Node modules and other dependencies
 node_modules
 npm-debug.log
-.git
-.env
+yarn-error.log
 
+# Logs
+logs
+*.log
+
+# Dependency directories
+jspm_packages/
+.bower_components
+dist/
+coverage/
+
+# Git and other version control
+.git
+.gitignore
+.gitattributes
+
+# Environment and configuration files
+.env
+.env.* # Ignore all variations of .env files
+
+# Docker-specific files
+Dockerfile
+Dockerfile.*  # Any other Dockerfile variants
+docker-compose.yml
+docker-compose.*.yml
+
+# IDEs and editors
+*.swp
+*~
+.project
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Test directories
+tests/
+__tests__/
+*.spec.js
+*.test.js
+*.mjs
+
+# Ignore any compiled or build files
+*.out
+*.o
+*.exe
+.DS_Store
+
+# Ignore any markdown or documentation files
+README.md
+README.txt
+*.md
