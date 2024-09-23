@@ -13,7 +13,7 @@ RUN npm install
 # Copy the rest of the application
 COPY . .
 
-# Run tests
+# Run tests (the build will fail if tests do not pass)
 RUN npm test
 
 # Stage 2: Production Stage (final image)
@@ -22,14 +22,11 @@ FROM node:14-alpine
 # Set working directory for the final image
 WORKDIR /usr/src/app
 
-# Copy only the necessary files from the build stage (excluding test files and dev dependencies)
+# Copy only the necessary files from the build stage
 COPY --from=build /usr/src/app /usr/src/app
 
-# Remove any unnecessary files like test files if they are not needed in production
-RUN rm -rf test node_modules/*
-
-# Install only production dependencies
-RUN npm install --production
+# Remove unnecessary files, such as tests and dev dependencies
+RUN rm -rf tests && npm prune --production
 
 # Expose the application port
 EXPOSE 3000
