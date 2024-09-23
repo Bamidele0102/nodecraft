@@ -16,7 +16,7 @@ pipeline {
         stage('Clone Repository') {
             steps {
                 // Integrate GitHub webhook for automatic builds
-                git branch: 'main', url: 'https://github.com/your-repo/your-nodejs-app.git'
+                git branch: 'main', url: 'https://github.com/Bamidele0102/nodecraft.git'
             }
         }
 
@@ -31,13 +31,15 @@ pipeline {
             steps {
                 // Run both unit and integration tests
                 sh 'npm test'
-                // To separate unit and integration tests, use:
-                // sh 'npm run test:unit && npm run test:integration'
             }
             post {
                 always {
                     // Publish test results for Jenkins
-                    junit 'test-results/*.xml'
+                    junit 'tests/integration/test-results/*.xml'
+                }
+                failure {
+                    // Fail the build if tests do not pass
+                    error "Tests failed. Aborting build."
                 }
             }
         }
@@ -45,7 +47,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    dockerImage = docker.build("your-dockerhub-username/your-nodejs-app:${env.BUILD_ID}")
+                    dockerImage = docker.build("bamidele0102/backend-app:v${env.BUILD_ID}")
                 }
             }
         }
@@ -55,7 +57,6 @@ pipeline {
                 script {
                     docker.withRegistry('https://index.docker.io/v1/', 'docker-hub-credentials') {
                         dockerImage.push()
-                        dockerImage.push('latest')  // Tagging 'latest' for production
                     }
                 }
             }
@@ -66,10 +67,10 @@ pipeline {
                 sshagent(credentials: ['your-ssh-credentials-id']) {
                     sh '''
                     ssh -o StrictHostKeyChecking=no user@100.25.28.252 << EOF
-                    docker pull your-dockerhub-username/your-nodejs-app:${env.BUILD_ID}
-                    docker stop your-nodejs-app || true
-                    docker rm your-nodejs-app || true
-                    docker run -d --name your-nodejs-app -p 3000:3000 --env-file .env your-dockerhub-username/your-nodejs-app:${env.BUILD_ID}
+                    docker pull bamidele0102/backend-app:v${env.BUILD_ID}
+                    docker stop backend-app || true
+                    docker rm backend-app || true
+                    docker run -d --name backend-app -p 3000:3000 --env-file .env bamidele0102/backend-app:v${env.BUILD_ID}
                     EOF
                     '''
                 }
