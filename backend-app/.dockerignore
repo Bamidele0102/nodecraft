@@ -38,11 +38,12 @@ docker-compose.*.yml
 *.sublime-workspace
 
 # Test directories
-tests/
-__tests__/
-*.spec.js
-*.test.js
-*.mjs
+# Comment out the following lines to include the tests directory and test files
+# tests/
+# __tests__/
+# *.spec.js
+# *.test.js
+# *.mjs
 
 # Ignore any compiled or build files
 *.out
@@ -55,10 +56,6 @@ README.md
 README.txt
 *.md
 
-# Ignore test files
-tests/integration/app.test.mjs
-tests/integration/item.test.mjs
-tests/unit/itemController.test.js
 # Add any other unnecessary files/folders here
 .DS_Store  # MacOS
 Thumbs.db  # Windows
