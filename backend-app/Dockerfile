@@ -17,7 +17,7 @@ COPY . .
 COPY tests ./tests
 
 # Run tests (the build will fail if tests do not pass)
-RUN npm run test
+RUN npm test
 
 # Stage 2: Production Stage (final image)
 FROM node:14-alpine
