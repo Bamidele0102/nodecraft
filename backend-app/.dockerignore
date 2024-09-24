@@ -19,8 +19,8 @@ coverage/
 .gitattributes
 
 # Environment and configuration files
-.env
-.env.* # Ignore all variations of .env files
+#.env
+# .env.* # Ignore all variations of .env files
 
 # Docker-specific files
 Dockerfile
