@@ -78,7 +78,7 @@ pipeline {
                     def minorVersion = env.BUILD_NUMBER.toInteger() % 10
                     env.IMAGE_VERSION = "v${majorVersion}.${minorVersion}"
                     
-                    // Build Docker image with dynamic versioning
+                    // Build Docker image with dynamic version
                     dockerImage = docker.build("bamidele0102/backend-app:${env.IMAGE_VERSION}")
                 }
             }
