@@ -32,8 +32,16 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 dir('backend-app') {
+                    // Restore cached node_modules
+                    script {
+                        if (fileExists('node_modules')) {
+                            stash name: 'node_modules', includes: 'node_modules/**'
+                        }
+                    }
                     // Install Node.js dependencies
-                    sh 'npm install'
+                    sh 'npm ci'
+                    // Cache node_modules after installation
+                    stash name: 'node_modules', includes: 'node_modules/**'
                 }
             }
         }
@@ -41,10 +49,13 @@ pipeline {
         stage('Run Unit and Integration Tests') {
             steps {
                 dir('backend-app') {
+                    // Restore node_modules from cache before running tests
+                    unstash 'node_modules'
                     // Run both unit and integration tests
                     sh 'npm test'
                 }
             }
+
             post {
                 always {
                     dir('backend-app') {
