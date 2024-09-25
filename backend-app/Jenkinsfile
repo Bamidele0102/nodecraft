@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     tools {
-        nodejs 'NodeJS 14'
+        nodejs 'NodeJS 16'  // Updated to use NodeJS 16 (make sure it's installed in Jenkins)
     }
 
     environment {
@@ -51,7 +51,7 @@ pipeline {
                 dir('backend-app') {
                     // Restore node_modules from cache before running tests
                     unstash 'node_modules'
-                    // Run both unit and integration testss
+                    // Run both unit and integration tests
                     sh 'npm test'
                 }
             }
@@ -122,7 +122,6 @@ pipeline {
                 - Build URL: ${env.BUILD_URL}
                 """,
                 to: "idowu.olayiwola.bamidele@gmail.com,victorgavon@gmail.com",
-                recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']]
             )
         }
 
@@ -137,7 +136,6 @@ pipeline {
                 - Build URL: ${env.BUILD_URL}
                 """,
                 to: "idowu.olayiwola.bamidele@gmail.com,victorgavon@gmail.com",
-                recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']]
             )
         }
     }

@@ -1,5 +1,5 @@
 # Stage 1: Build Stage
-FROM node:14-alpine AS build
+FROM node:16-alpine AS build
 
 # Set working directory
 WORKDIR /usr/src/app
@@ -20,7 +20,7 @@ COPY tests ./tests
 RUN npm test
 
 # Stage 2: Production Stage (final image)
-FROM node:14-alpine
+FROM node:16-alpine
 
 # Set working directory for the final image
 WORKDIR /usr/src/app
