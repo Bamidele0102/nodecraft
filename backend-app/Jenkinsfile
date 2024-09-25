@@ -51,7 +51,7 @@ pipeline {
                 dir('backend-app') {
                     // Restore node_modules from cache before running tests
                     unstash 'node_modules'
-                    // Run both unit and integration tests
+                    // Run both unit and integration testss
                     sh 'npm test'
                 }
             }
