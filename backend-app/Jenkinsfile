@@ -2,11 +2,10 @@ pipeline {
     agent any
 
     tools {
-        nodejs 'NodeJS 16'
+        nodejs 'NodeJS 16'  // Using NodeJS 16
     }
 
     environment {
-        // Pull sensitive data from Jenkins credentials
         MONGO_URI = credentials('MONGO_URI')
         JWT_SECRET = credentials('JWT_SECRET')
         PORT = '3000'
@@ -30,23 +29,24 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 dir('backend-app') {
-                    // Set npm registry and increase timeout
-                    sh 'npm config set registry https://registry.npmjs.org/'
-                    sh 'npm config set fetch-timeout 60000'
+                    script {
+                        // Set npm registry and increase timeout
+                        sh 'npm config set registry https://registry.npmjs.org/'
+                        sh 'npm config set fetch-timeout 60000'
 
-                    // Install Node.js dependencies
-                    echo 'Starting npm install...'
-                    timeout(time: 20, unit: 'MINUTES') {
-                        sh 'npm install'
+                        echo 'Starting npm install...'
+                        
+                        // Install all dependencies including devDependencies
+                        retry(3) {
+                            timeout(time: 20, unit: 'MINUTES') {
+                                sh 'npm install'
+                            }
+                        }
+
+                        // Verify if node_modules exists
+                        echo 'Verifying node_modules installation...'
+                        sh 'ls -la node_modules || echo "node_modules not found"'
                     }
-
-                    // Check if mocha is installed
-                    echo 'Verifying Mocha installation...'
-                    sh 'npm list mocha || npm install mocha'
-
-                    // Check if node_modules exists
-                    echo 'Checking if node_modules exists...'
-                    sh 'ls -la node_modules || echo "node_modules not found"'
                 }
             }
         }
@@ -54,24 +54,41 @@ pipeline {
         stage('Run Unit and Integration Tests') {
             steps {
                 dir('backend-app') {
-                    // Run both unit and integration tests
-                    timeout(time: 10, unit: 'MINUTES') {
-                        sh 'npm test'
+                    // Add node_modules/.bin to the PATH
+                    withEnv(["PATH+NODE=${env.WORKSPACE}/backend-app/node_modules/.bin"]) {
+                        // Use npx to run Mocha tests
+                        timeout(time: 10, unit: 'MINUTES') {
+                            sh 'npx mocha --timeout 20000 "tests/**/*.test.mjs" "tests/**/*.test.js"'
+                        }
                     }
-
-                    // Cache node_modules after running tests
-                    stash name: 'node_modules', includes: 'node_modules/**'
                 }
             }
 
             post {
                 always {
                     dir('backend-app') {
+                        // Publish test results for Jenkins
                         junit 'test-results/*.xml'
                     }
                 }
                 failure {
                     error "Tests failed. Aborting build."
+                }
+            }
+        }
+
+        stage('Stash Dependencies') {
+            steps {
+                dir('backend-app') {
+                    script {
+                        // Stash node_modules after installation if it exists
+                        if (fileExists('node_modules')) {
+                            echo 'Stashing node_modules...'
+                            stash name: 'node_modules', includes: 'node_modules/**'
+                        } else {
+                            error "node_modules not found after npm install. Failing the build."
+                        }
+                    }
                 }
             }
         }
@@ -124,7 +141,7 @@ pipeline {
                 - Build Number: ${env.BUILD_NUMBER}
                 - Build URL: ${env.BUILD_URL}
                 """,
-                to: "idowu.olayiwola.bamidele@gmail.com,victorgavon@gmail.com",
+                to: "idowu.olayiwola.bamidele@gmail.com,victorgavon@gmail.com"
             )
         }
 
@@ -137,7 +154,7 @@ pipeline {
                 - Build Number: ${env.BUILD_NUMBER}
                 - Build URL: ${env.BUILD_URL}
                 """,
-                to: "idowu.olayiwola.bamidele@gmail.com,victorgavon@gmail.com",
+                to: "idowu.olayiwola.bamidele@gmail.com,victorgavon@gmail.com"
             )
         }
     }
