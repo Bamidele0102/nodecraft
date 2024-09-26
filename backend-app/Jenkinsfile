@@ -36,8 +36,8 @@ pipeline {
                         sh 'npm config set fetch-timeout 60000'
 
                         echo 'Starting npm install...'
-
-                        // Install Node.js dependencies with a retry mechanism
+                        
+                        // Install Node.js dependencies
                         retry(3) {
                             timeout(time: 20, unit: 'MINUTES') {
                                 sh 'npm install'
@@ -65,9 +65,13 @@ pipeline {
                 dir('backend-app') {
                     // Restore node_modules from cache before running tests
                     unstash 'node_modules'
-                    // Run both unit and integration tests
-                    timeout(time: 10, unit: 'MINUTES') {
-                        sh 'npm test'
+
+                    // Add node_modules/.bin to the PATH
+                    withEnv(["PATH+NODE=${env.WORKSPACE}/backend-app/node_modules/.bin"]) {
+                        // Run both unit and integration tests using npx
+                        timeout(time: 10, unit: 'MINUTES') {
+                            sh 'npx mocha --timeout 20000 "tests/**/*.test.mjs" "tests/**/*.test.js"'
+                        }
                     }
                 }
             }
@@ -92,7 +96,6 @@ pipeline {
                     def minorVersion = env.BUILD_NUMBER.toInteger() % 10
                     env.IMAGE_VERSION = "v${majorVersion}.${minorVersion}"
                     
-                    // Build Docker image with dynamic versioning
                     dockerImage = docker.build("bamidele0102/backend-app:${env.IMAGE_VERSION}")
                 }
             }
