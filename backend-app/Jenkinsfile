@@ -13,12 +13,6 @@ pipeline {
     }
 
     stages {
-        stage('Clean Workspace') {
-            steps {
-                cleanWs()  // Clean the workspace before starting the build
-            }
-        }
-
         stage('Clone Repository') {
             steps {
                 // Integrate GitHub webhook for automatic builds
@@ -29,6 +23,7 @@ pipeline {
         stage('Navigate to Backend Directory') {
             steps {
                 dir('backend-app') {
+                    // Navigate to the backend-app directory
                     echo 'Navigated to backend-app directory'
                 }
             }
@@ -37,26 +32,29 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 dir('backend-app') {
-                    // Set a timeout for this stage
-                    timeout(time: 20, unit: 'MINUTES') {
-                        // Restore cached node_modules if available
-                        script {
-                            if (fileExists('node_modules')) {
-                                stash name: 'node_modules', includes: 'node_modules/**'
-                            }
+                    // Set npm registry and increase timeout
+                    sh 'npm config set registry https://registry.npmjs.org/'
+                    sh 'npm config set fetch-timeout 60000'
+
+                    // Restore cached node_modules if available
+                    script {
+                        if (fileExists('node_modules')) {
+                            stash name: 'node_modules', includes: 'node_modules/**'
                         }
-
-                        echo 'Starting npm ci...'
-                        // Install Node.js dependencies
-                        sh 'npm ci'
-
-                        // Check if node_modules exists after npm ci
-                        echo 'Checking if node_modules exists...'
-                        sh 'ls -la node_modules || echo "node_modules not found"'
-
-                        // Cache node_modules after installation
-                        stash name: 'node_modules', includes: 'node_modules/**'
                     }
+
+                    echo 'Starting npm ci...'
+                    // Install Node.js dependencies
+                    timeout(time: 20, unit: 'MINUTES') {
+                        sh 'npm ci'
+                    }
+
+                    // Check if node_modules exists after npm ci
+                    echo 'Checking if node_modules exists...'
+                    sh 'ls -la node_modules || echo "node_modules not found"'
+
+                    // Cache node_modules after installation
+                    stash name: 'node_modules', includes: 'node_modules/**'
                 }
             }
         }
@@ -66,8 +64,10 @@ pipeline {
                 dir('backend-app') {
                     // Restore node_modules from cache before running tests
                     unstash 'node_modules'
-                    echo 'Running tests...'
-                    sh 'npm test'
+                    // Run both unit and integration tests
+                    timeout(time: 10, unit: 'MINUTES') {
+                        sh 'npm test'
+                    }
                 }
             }
 
@@ -136,7 +136,7 @@ pipeline {
                 - Build Number: ${env.BUILD_NUMBER}
                 - Build URL: ${env.BUILD_URL}
                 """,
-                to: "idowu.olayiwola.bamidele@gmail.com,victorgavon@gmail.com"
+                to: "idowu.olayiwola.bamidele@gmail.com,victorgavon@gmail.com",
             )
         }
 
@@ -150,7 +150,7 @@ pipeline {
                 - Build Number: ${env.BUILD_NUMBER}
                 - Build URL: ${env.BUILD_URL}
                 """,
-                to: "idowu.olayiwola.bamidele@gmail.com,victorgavon@gmail.com"
+                to: "idowu.olayiwola.bamidele@gmail.com,victorgavon@gmail.com",
             )
         }
     }
