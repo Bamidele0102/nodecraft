@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     tools {
-        nodejs 'NodeJS 16'  // Updated to use NodeJS 16 (make sure it's installed in Jenkins)
+        nodejs 'NodeJS 16'  // Updated to use NodeJS 16
     }
 
     environment {
