@@ -30,23 +30,36 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 dir('backend-app') {
-                    // Set npm registry and increase timeout
-                    sh 'npm config set registry https://registry.npmjs.org/'
-                    sh 'npm config set fetch-timeout 60000'
+                    script {
+                        // Set npm registry and increase timeout
+                        sh 'npm config set registry https://registry.npmjs.org/'
+                        sh 'npm config set fetch-timeout 60000'
 
-                    // Install Node.js dependencies
-                    echo 'Starting npm install...'
-                    timeout(time: 20, unit: 'MINUTES') {
-                        sh 'npm install'
+                        echo 'Starting npm install...'
+                        
+                        // Install all dependencies including devDependencies
+                        retry(3) {
+                            timeout(time: 20, unit: 'MINUTES') {
+                                sh 'npm install'
+                            }
+                        }
+
+                        // Verify if node_modules exists
+                        echo 'Verifying node_modules installation...'
+                        sh 'ls -la node_modules || echo "node_modules not found"'
                     }
+                }
+            }
+        }
 
-                    // Verify that Mocha is installed and install if necessary
-                    echo 'Verifying Mocha installation...'
-                    sh 'npm list mocha || npm install mocha'
-
-                    // Check if node_modules exists
-                    echo 'Checking if node_modules exists...'
-                    sh 'ls -la node_modules || echo "node_modules not found"'
+        stage('Verify Mocha Installation') {
+            steps {
+                dir('backend-app') {
+                    // Add node_modules/.bin to the PATH
+                    withEnv(["PATH+NODE=${env.WORKSPACE}/backend-app/node_modules/.bin"]) {
+                        // Verify Mocha installation
+                        sh 'npx mocha --version'
+                    }
                 }
             }
         }
@@ -54,9 +67,12 @@ pipeline {
         stage('Run Unit and Integration Tests') {
             steps {
                 dir('backend-app') {
-                    // Run both unit and integration tests using npx to ensure Mocha is found
-                    timeout(time: 10, unit: 'MINUTES') {
-                        sh 'npx mocha --timeout 20000 "tests/**/*.test.mjs" "tests/**/*.test.js"'
+                    // Add node_modules/.bin to the PATH
+                    withEnv(["PATH+NODE=${env.WORKSPACE}/backend-app/node_modules/.bin"]) {
+                        // Use npx to run Mocha tests
+                        timeout(time: 10, unit: 'MINUTES') {
+                            sh 'npx mocha --timeout 20000 "tests/**/*.test.mjs" "tests/**/*.test.js"'
+                        }
                     }
                 }
             }
@@ -64,6 +80,7 @@ pipeline {
             post {
                 always {
                     dir('backend-app') {
+                        // Publish test results for Jenkins
                         junit 'test-results/*.xml'
                     }
                 }
@@ -79,7 +96,7 @@ pipeline {
                     def majorVersion = (env.BUILD_NUMBER.toInteger() / 10).toInteger() + 1
                     def minorVersion = env.BUILD_NUMBER.toInteger() % 10
                     env.IMAGE_VERSION = "v${majorVersion}.${minorVersion}"
-
+                    
                     dockerImage = docker.build("bamidele0102/backend-app:${env.IMAGE_VERSION}")
                 }
             }
@@ -121,7 +138,7 @@ pipeline {
                 - Build Number: ${env.BUILD_NUMBER}
                 - Build URL: ${env.BUILD_URL}
                 """,
-                to: "idowu.olayiwola.bamidele@gmail.com,victorgavon@gmail.com",
+                to: "idowu.olayiwola.bamidele@gmail.com,victorgavon@gmail.com"
             )
         }
 
@@ -134,7 +151,7 @@ pipeline {
                 - Build Number: ${env.BUILD_NUMBER}
                 - Build URL: ${env.BUILD_URL}
                 """,
-                to: "idowu.olayiwola.bamidele@gmail.com,victorgavon@gmail.com",
+                to: "idowu.olayiwola.bamidele@gmail.com,victorgavon@gmail.com"
             )
         }
     }
