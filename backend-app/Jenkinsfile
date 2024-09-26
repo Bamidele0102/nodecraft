@@ -2,11 +2,10 @@ pipeline {
     agent any
 
     tools {
-        nodejs 'NodeJS 16'  // Updated to use NodeJS 16
+        nodejs 'NodeJS 16'  // Using NodeJS 16
     }
 
     environment {
-        // Pull sensitive data from Jenkins credentials
         MONGO_URI = credentials('MONGO_URI')
         JWT_SECRET = credentials('JWT_SECRET')
         PORT = '3000'
@@ -37,18 +36,18 @@ pipeline {
 
                         echo 'Starting npm install...'
                         
-                        // Install Node.js dependencies
+                        // Install all dependencies including devDependencies
                         retry(3) {
                             timeout(time: 20, unit: 'MINUTES') {
                                 sh 'npm install'
                             }
                         }
 
-                        // Check if node_modules exists after npm install
+                        // Verify if node_modules exists
                         echo 'Verifying node_modules installation...'
                         sh 'ls -la node_modules || echo "node_modules not found"'
 
-                        // Cache node_modules if it exists
+                        // Stash node_modules after installation if it exists
                         if (fileExists('node_modules')) {
                             echo 'Stashing node_modules...'
                             stash name: 'node_modules', includes: 'node_modules/**'
@@ -63,12 +62,12 @@ pipeline {
         stage('Run Unit and Integration Tests') {
             steps {
                 dir('backend-app') {
-                    // Restore node_modules from cache before running tests
+                    // Restore node_modules from stash before running tests
                     unstash 'node_modules'
 
                     // Add node_modules/.bin to the PATH
                     withEnv(["PATH+NODE=${env.WORKSPACE}/backend-app/node_modules/.bin"]) {
-                        // Run both unit and integration tests using npx
+                        // Use npx to run Mocha tests
                         timeout(time: 10, unit: 'MINUTES') {
                             sh 'npx mocha --timeout 20000 "tests/**/*.test.mjs" "tests/**/*.test.js"'
                         }
