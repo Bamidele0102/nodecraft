@@ -40,9 +40,13 @@ pipeline {
                         sh 'npm install'
                     }
 
-                    // Verify that Mocha is installed
+                    // Verify that Mocha is installed and install if necessary
                     echo 'Verifying Mocha installation...'
-                    sh 'npx mocha --version || npm install mocha'
+                    sh 'npm list mocha || npm install mocha'
+
+                    // Check if node_modules exists
+                    echo 'Checking if node_modules exists...'
+                    sh 'ls -la node_modules || echo "node_modules not found"'
                 }
             }
         }
@@ -60,7 +64,7 @@ pipeline {
             post {
                 always {
                     dir('backend-app') {
-                        junit 'test-results/*.xml' // Adjust this path as needed
+                        junit 'test-results/*.xml'
                     }
                 }
                 failure {
@@ -72,12 +76,10 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    // Calculate major and minor versions
                     def majorVersion = (env.BUILD_NUMBER.toInteger() / 10).toInteger() + 1
                     def minorVersion = env.BUILD_NUMBER.toInteger() % 10
                     env.IMAGE_VERSION = "v${majorVersion}.${minorVersion}"
-                    
-                    // Build Docker image with dynamic versioning
+
                     dockerImage = docker.build("bamidele0102/backend-app:${env.IMAGE_VERSION}")
                 }
             }
