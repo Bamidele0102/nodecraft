@@ -49,12 +49,14 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                script {
-                    def majorVersion = (env.BUILD_NUMBER.toInteger() / 10).toInteger() + 1
-                    def minorVersion = env.BUILD_NUMBER.toInteger() % 10
-                    env.IMAGE_VERSION = "v${majorVersion}.${minorVersion}"
-                    
-                    dockerImage = docker.build("bamidele0102/backend-app:${env.IMAGE_VERSION}")
+                dir('backend-app') {
+                    script {
+                        def majorVersion = (env.BUILD_NUMBER.toInteger() / 10).toInteger() + 1
+                        def minorVersion = env.BUILD_NUMBER.toInteger() % 10
+                        env.IMAGE_VERSION = "v${majorVersion}.${minorVersion}"
+                        
+                        dockerImage = docker.build("bamidele0102/backend-app:${env.IMAGE_VERSION}")
+                    }
                 }
             }
         }
