@@ -1,0 +1,42 @@
+pipeline {
+    agent any
+
+    tools {
+        nodejs 'NodeJS 16'
+    }
+
+    stages {
+        stage('Clone Repository') {
+            steps {
+                git branch: 'main', url: 'https://github.com/Bamidele0102/nodecraft.git'
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                sh 'npm install'
+            }
+        }
+
+        stage('Run Tests') {
+            steps {
+                sh 'npx mocha --timeout 20000 "tests/**/*.test.mjs" "tests/**/*.test.js"'
+            }
+        }
+
+        stage('Publish Test Results') {
+            steps {
+                junit 'test-results/*.xml'
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "Tests passed successfully!"
+        }
+        failure {
+            echo "Tests failed. Check the test reports for details."
+        }
+    }
+}

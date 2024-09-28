@@ -2,11 +2,10 @@ pipeline {
     agent any
 
     tools {
-        nodejs 'NodeJS 16'  // Ensure NodeJS 16 is installed in Jenkins
+        nodejs 'NodeJS 16'
     }
 
     environment {
-        // Pull sensitive data from Jenkins credentials
         MONGO_URI = credentials('MONGO_URI')
         JWT_SECRET = credentials('JWT_SECRET')
         PORT = '3000'
@@ -31,61 +30,19 @@ pipeline {
             steps {
                 dir('backend-app') {
                     script {
-                        // Set npm registry and increase timeout
                         sh 'npm config set registry https://registry.npmjs.org/'
                         sh 'npm config set fetch-timeout 60000'
-
                         echo 'Starting npm install...'
                         
-                        // Install all dependencies including devDependencies
                         retry(3) {
                             timeout(time: 20, unit: 'MINUTES') {
-                                sh 'npm install'
+                                sh 'npm install --only=production'
                             }
                         }
 
-                        // Verify if node_modules exists
                         echo 'Verifying node_modules installation...'
                         sh 'ls -la node_modules || echo "node_modules not found"'
                     }
-                }
-            }
-        }
-
-        stage('Verify Mocha Installation') {
-            steps {
-                dir('backend-app') {
-                    // Add node_modules/.bin to the PATH
-                    withEnv(["PATH+NODE=${env.WORKSPACE}/backend-app/node_modules/.bin"]) {
-                        // Verify Mocha installation
-                        sh 'npx mocha --version'
-                    }
-                }
-            }
-        }
-
-        stage('Run Unit and Integration Tests') {
-            steps {
-                dir('backend-app') {
-                    // Add node_modules/.bin to the PATH
-                    withEnv(["PATH+NODE=${env.WORKSPACE}/backend-app/node_modules/.bin"]) {
-                        // Use npx to run Mocha tests
-                        timeout(time: 10, unit: 'MINUTES') {
-                            sh 'npx mocha --timeout 20000 "tests/**/*.test.mjs" "tests/**/*.test.js"'
-                        }
-                    }
-                }
-            }
-
-            post {
-                always {
-                    dir('backend-app') {
-                        // Publish test results for Jenkins
-                        junit 'test-results/*.xml'
-                    }
-                }
-                failure {
-                    error "Tests failed. Aborting build."
                 }
             }
         }
