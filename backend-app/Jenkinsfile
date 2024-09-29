@@ -14,12 +14,14 @@ pipeline {
     stages {
         stage('Clone Repository') {
             steps {
+                // Clone the repository from GitHub
                 git branch: 'main', url: 'https://github.com/Bamidele0102/nodecraft.git'
             }
         }
 
         stage('Navigate to Backend Directory') {
             steps {
+                // Navigate to the backend-app directory
                 dir('backend-app') {
                     echo 'Navigated to backend-app directory'
                 }
@@ -30,16 +32,19 @@ pipeline {
             steps {
                 dir('backend-app') {
                     script {
+                        // Set npm registry and timeout
                         sh 'npm config set registry https://registry.npmjs.org/'
                         sh 'npm config set fetch-timeout 60000'
                         echo 'Starting npm install...'
                         
+                        // Retry npm install up to 3 times with a timeout of 20 minutes
                         retry(3) {
                             timeout(time: 20, unit: 'MINUTES') {
                                 sh 'npm install --only=production'
                             }
                         }
 
+                        // Verify node_modules installation
                         echo 'Verifying node_modules installation...'
                         sh 'ls -la node_modules || echo "node_modules not found"'
                     }
@@ -51,10 +56,12 @@ pipeline {
             steps {
                 dir('backend-app') {
                     script {
+                        // Calculate the Docker image version based on the build number
                         def majorVersion = (env.BUILD_NUMBER.toInteger() / 10).toInteger() + 1
                         def minorVersion = env.BUILD_NUMBER.toInteger() % 10
                         env.IMAGE_VERSION = "v${majorVersion}.${minorVersion}"
                         
+                        // Build the Docker image
                         dockerImage = docker.build("bamidele0102/backend-app:${env.IMAGE_VERSION}")
                     }
                 }
@@ -64,6 +71,7 @@ pipeline {
         stage('Push Docker Image to Docker Hub') {
             steps {
                 script {
+                    // Push the Docker image to Docker Hub
                     docker.withRegistry('https://index.docker.io/v1/', 'docker-hub-credentials') {
                         dockerImage.push(env.IMAGE_VERSION)
                     }
@@ -73,6 +81,7 @@ pipeline {
 
         stage('Deploy to Production Server') {
             steps {
+                // Deploy the Docker image to the production server
                 sshagent(credentials: ['your-ssh-credentials-id']) {
                     sh """
                     ssh -o StrictHostKeyChecking=no user@100.25.28.252 << EOF
@@ -89,6 +98,7 @@ pipeline {
 
     post {
         success {
+            // Send an email notification on success
             emailext (
                 subject: "SUCCESS: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'",
                 body: """
@@ -102,6 +112,7 @@ pipeline {
         }
 
         failure {
+            // Send an email notification on failure
             emailext (
                 subject: "FAILURE: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'",
                 body: """
