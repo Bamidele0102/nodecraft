@@ -86,7 +86,7 @@ pipeline {
                 // Deploying Docker image to production server using SSH
                 sshagent(credentials: ['your-ssh-credentials-id']) {
                     sh """
-                    ssh -o StrictHostKeyChecking=no user@100.25.28.252 << EOF
+                    ssh -o StrictHostKeyChecking=no ubuntu@100.25.28.252 << EOF
                     docker pull bamidele0102/backend-app:${env.IMAGE_VERSION}
                     docker stop backend-app || true
                     docker rm backend-app || true
