@@ -3,7 +3,7 @@ services:
   app:
     image: bamidele0102/backend-app:v1.4  # Updated the image tag version
     build:
-      context: .
+      context: . 
       dockerfile: Dockerfile  # Points to the Dockerfile in the root directory
     container_name: backend-app
     env_file:

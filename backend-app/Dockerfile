@@ -1,8 +1,8 @@
 # Stage 1: Build Stage
-FROM node:16-buster AS build
+FROM node:16-alpine AS build
 
 # Install build dependencies
-RUN apt-get update && apt-get install -y python3 make g++ build-essential
+RUN apk add --no-cache python3 make g++
 
 # Set working directory
 WORKDIR /usr/src/app
@@ -31,5 +31,8 @@ RUN rm -rf tests && npm prune --production
 # Expose the port the app runs on
 EXPOSE 3000
 
-# Start the application
+# Set environment variables for production
+ENV NODE_ENV=production
+
+# Command to run the application
 CMD ["node", "app.js"]
