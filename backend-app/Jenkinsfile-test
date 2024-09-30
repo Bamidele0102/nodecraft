@@ -5,6 +5,12 @@ pipeline {
         nodejs 'NodeJS 16'
     }
 
+    environment {
+        MONGO_URI = credentials('MONGO_URI')
+        JWT_SECRET = credentials('JWT_SECRET')
+        PORT = '3000'
+    }
+
     stages {
         stage('Clone Repository') {
             steps {
@@ -12,31 +18,84 @@ pipeline {
             }
         }
 
-        stage('Install Dependencies') {
+        stage('Navigate to Backend Directory') {
             steps {
-                sh 'npm install'
+                dir('backend-app') {
+                    echo 'Navigated to backend-app directory'
+                }
             }
         }
 
-        stage('Run Tests') {
+        stage('Install Dependencies for Testing') {
             steps {
-                sh 'npx mocha --timeout 20000 "tests/**/*.test.mjs" "tests/**/*.test.js"'
+                dir('backend-app') {
+                    script {
+                        sh 'npm config set registry https://registry.npmjs.org/'
+                        sh 'npm config set fetch-timeout 60000'
+                        echo 'Starting npm install for testing...'
+                        
+                        retry(3) {
+                            timeout(time: 20, unit: 'MINUTES') {
+                                sh 'npm install'
+                            }
+                        }
+
+                        echo 'Verifying node_modules installation...'
+                        sh 'ls -la node_modules || echo "node_modules not found"'
+                    }
+                }
             }
         }
 
-        stage('Publish Test Results') {
+        stage('Run Unit and Integration Tests') {
             steps {
-                junit 'test-results/*.xml'
+                dir('backend-app') {
+                    withEnv(["PATH+NODE=${env.WORKSPACE}/backend-app/node_modules/.bin"]) {
+                        timeout(time: 10, unit: 'MINUTES') {
+                            sh 'npx mocha --timeout 20000 "tests/**/*.test.mjs" "tests/**/*.test.js"'
+                        }
+                    }
+                }
+            }
+
+            post {
+                always {
+                    dir('backend-app') {
+                        junit 'test-results/*.xml'
+                    }
+                }
+                failure {
+                    error "Tests failed. Aborting build."
+                }
             }
         }
     }
 
     post {
         success {
-            echo "Tests passed successfully!"
+            emailext (
+                subject: "SUCCESS: Test Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'",
+                body: """
+                Good news! The tests passed.
+                - Job: ${env.JOB_NAME}
+                - Build Number: ${env.BUILD_NUMBER}
+                - Build URL: ${env.BUILD_URL}
+                """,
+                to: "idowu.olayiwola.bamidele@gmail.com,victorgavon@gmail.com"
+            )
         }
+
         failure {
-            echo "Tests failed. Check the test reports for details."
+            emailext (
+                subject: "FAILURE: Test Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'",
+                body: """
+                Unfortunately, the tests failed.
+                - Job: ${env.JOB_NAME}
+                - Build Number: ${env.BUILD_NUMBER}
+                - Build URL: ${env.BUILD_URL}
+                """,
+                to: "idowu.olayiwola.bamidele@gmail.com,victorgavon@gmail.com"
+            )
         }
     }
 }
