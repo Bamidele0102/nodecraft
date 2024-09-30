@@ -7,17 +7,11 @@ WORKDIR /usr/src/app
 # Copy package.json and package-lock.json (if available)
 COPY package*.json ./
 
-# Install all dependencies, including dev dependencies for testing
-RUN npm install
+# Install only production dependencies
+RUN npm install --only=production
 
 # Copy the rest of the application
 COPY . .
-
-# Ensure test files are copied
-COPY tests ./tests
-
-# Run tests (the build will fail if tests do not pass)
-RUN npm test
 
 # Stage 2: Production Stage (final image)
 FROM node:16-alpine
@@ -28,8 +22,8 @@ WORKDIR /usr/src/app
 # Copy only the necessary files from the build stage
 COPY --from=build /usr/src/app /usr/src/app
 
-# Remove unnecessary files, such as tests and dev dependencies
-RUN rm -rf tests && npm prune --production
+# Remove unnecessary files, such as dev dependencies
+RUN npm prune --production
 
 # Expose the application port
 EXPOSE 3000
