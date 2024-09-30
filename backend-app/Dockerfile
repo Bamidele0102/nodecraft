@@ -1,20 +1,23 @@
 # Stage 1: Build Stage
 FROM node:16-alpine AS build
 
-# Install build dependencies
-RUN apk add --no-cache python3 make g++
-
 # Set working directory
 WORKDIR /usr/src/app
 
 # Copy package.json and package-lock.json (if available)
 COPY package*.json ./
 
-# Install all dependencies (including dev dependencies)
+# Install all dependencies, including dev dependencies for testing
 RUN npm install
 
 # Copy the rest of the application
 COPY . .
+
+# Ensure test files are copied
+COPY tests ./tests
+
+# Run tests (the build will fail if tests do not pass)
+RUN npm test
 
 # Stage 2: Production Stage (final image)
 FROM node:16-alpine
@@ -28,11 +31,11 @@ COPY --from=build /usr/src/app /usr/src/app
 # Remove unnecessary files, such as tests and dev dependencies
 RUN rm -rf tests && npm prune --production
 
-# Expose the port the app runs on
+# Expose the application port
 EXPOSE 3000
 
 # Set environment variables for production
 ENV NODE_ENV=production
 
 # Command to run the application
-CMD ["node", "app.js"]
+CMD ["node", "server.js"]
