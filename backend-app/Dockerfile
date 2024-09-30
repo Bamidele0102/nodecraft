@@ -4,6 +4,9 @@ FROM node:16-alpine AS build
 # Set working directory
 WORKDIR /usr/src/app
 
+# Install build dependencies
+RUN apk add --no-cache python3 make g++
+
 # Copy package.json and package-lock.json (if available)
 COPY package*.json ./
 
