@@ -1,28 +1,30 @@
 pipeline {
-    agent any
+    agent {
+        label 'build-agent' // Running the pipeline on the build-agent node
+    }
 
     tools {
-        nodejs 'NodeJS 16'
+        nodejs 'NodeJS 16' // Using NodeJS 16 tool
     }
 
     environment {
-        MONGO_URI = credentials('MONGO_URI')
-        JWT_SECRET = credentials('JWT_SECRET')
-        PORT = '3000'
+        MONGO_URI = credentials('MONGO_URI') // MongoDB URI from Jenkins credentials
+        JWT_SECRET = credentials('JWT_SECRET') // JWT secret from Jenkins credentials
+        PORT = '3000' // Application port
     }
 
     stages {
         stage('Clone Repository') {
             steps {
-                // Clone the repository from GitHub
+                // Cloning the repository from GitHub
                 git branch: 'main', url: 'https://github.com/Bamidele0102/nodecraft.git'
             }
         }
 
         stage('Navigate to Backend Directory') {
             steps {
-                // Navigate to the backend-app directory
                 dir('backend-app') {
+                    // Navigating to backend-app directory
                     echo 'Navigated to backend-app directory'
                 }
             }
@@ -32,19 +34,19 @@ pipeline {
             steps {
                 dir('backend-app') {
                     script {
-                        // Set npm registry and timeout
+                        // Setting npm registry and fetch timeout
                         sh 'npm config set registry https://registry.npmjs.org/'
                         sh 'npm config set fetch-timeout 60000'
                         echo 'Starting npm install...'
                         
-                        // Retry npm install up to 3 times with a timeout of 20 minutes
+                        // Retrying npm install up to 3 times with a timeout of 20 minutes
                         retry(3) {
                             timeout(time: 20, unit: 'MINUTES') {
                                 sh 'npm install --only=production'
                             }
                         }
-
-                        // Verify node_modules installation
+                        
+                        // Verifying node_modules installation
                         echo 'Verifying node_modules installation...'
                         sh 'ls -la node_modules || echo "node_modules not found"'
                     }
@@ -56,12 +58,12 @@ pipeline {
             steps {
                 dir('backend-app') {
                     script {
-                        // Calculate the Docker image version based on the build number
+                        // Calculating Docker image version based on build number
                         def majorVersion = (env.BUILD_NUMBER.toInteger() / 10).toInteger() + 1
                         def minorVersion = env.BUILD_NUMBER.toInteger() % 10
                         env.IMAGE_VERSION = "v${majorVersion}.${minorVersion}"
                         
-                        // Build the Docker image
+                        // Building Docker image
                         dockerImage = docker.build("bamidele0102/backend-app:${env.IMAGE_VERSION}")
                     }
                 }
@@ -71,7 +73,7 @@ pipeline {
         stage('Push Docker Image to Docker Hub') {
             steps {
                 script {
-                    // Push the Docker image to Docker Hub
+                    // Pushing Docker image to Docker Hub
                     docker.withRegistry('https://index.docker.io/v1/', 'docker-hub-credentials') {
                         dockerImage.push(env.IMAGE_VERSION)
                     }
@@ -81,7 +83,7 @@ pipeline {
 
         stage('Deploy to Production Server') {
             steps {
-                // Deploy the Docker image to the production server
+                // Deploying Docker image to production server using SSH
                 sshagent(credentials: ['your-ssh-credentials-id']) {
                     sh """
                     ssh -o StrictHostKeyChecking=no user@100.25.28.252 << EOF
@@ -98,7 +100,7 @@ pipeline {
 
     post {
         success {
-            // Send an email notification on success
+            // Sending email notification on success
             emailext (
                 subject: "SUCCESS: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'",
                 body: """
@@ -112,7 +114,7 @@ pipeline {
         }
 
         failure {
-            // Send an email notification on failure
+            // Sending email notification on failure
             emailext (
                 subject: "FAILURE: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'",
                 body: """
