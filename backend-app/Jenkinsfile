@@ -58,7 +58,7 @@ pipeline {
                             
                             // Correctly format the docker build command with build arguments
                             dockerImage = docker.build("bamidele0102/backend-app:${env.IMAGE_VERSION}", 
-                                "--build-arg MONGO_URI=${MONGO_URI} --build-arg JWT_SECRET=${JWT_SECRET} .")
+                                "--build-arg MONGO_URI='${MONGO_URI}' --build-arg JWT_SECRET='${JWT_SECRET}' .")
                         }
                     }
                 }
@@ -81,22 +81,10 @@ pipeline {
                     sshagent(credentials: ['your-ssh-credentials-id']) {
                         sh """
                         ssh -o StrictHostKeyChecking=no ubuntu@100.25.28.252 << EOF
-                            # Pull the latest Docker image
-                            docker pull bamidele0102/backend-app:${env.IMAGE_VERSION}
-                            
-                            # Stop and remove the existing container if it exists
-                            docker stop backend-app || true
-                            docker rm backend-app || true
-
-                            # Ensure the .env file exists, if not, create it
-                            if [ ! -f /home/ubuntu/.env ]; then
-                                echo "MONGO_URI=${MONGO_URI}" > /home/ubuntu/.env
-                                echo "JWT_SECRET=${JWT_SECRET}" >> /home/ubuntu/.env
-                                echo "PORT=${PORT}" >> /home/ubuntu/.env
-                            fi
-
-                            # Run the container using the new image with the .env file
-                            docker run -d --name backend-app -p 3000:3000 --env-file /home/ubuntu/.env bamidele0102/backend-app:${env.IMAGE_VERSION}
+                        docker pull bamidele0102/backend-app:${env.IMAGE_VERSION}
+                        docker stop backend-app || true
+                        docker rm backend-app || true
+                        docker run -d --name backend-app -p 3000:3000 --env-file .env bamidele0102/backend-app:${env.IMAGE_VERSION}
                         EOF
                         """
                     }
