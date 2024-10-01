@@ -1,0 +1,85 @@
+/* Reset default styles */
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: Arial, sans-serif;
+}
+
+/* Container styling */
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    position: relative;
+    background: url('/background.jpg') no-repeat center center fixed; /* Background image */
+    background-size: cover; /* Ensure the background covers the entire area */
+}
+
+/* Faint background effect */
+.container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5); /* Adjust opacity for faint effect */
+    z-index: 1;
+}
+
+/* Content styling */
+.logo {
+    width: 150px; /* Adjust logo size */
+    height: 150px; /* Keep height equal to width for a consistent shape */
+    margin-bottom: 20px;
+    animation: spin 10s linear infinite; /* Add spinning animation */
+    
+    /* Octagon shape styling */
+    clip-path: polygon(
+        25% 0%,  /* Top middle */
+        75% 0%,  /* Top right */
+        100% 25%, /* Right middle */
+        100% 75%, /* Bottom right */
+        75% 100%, /* Bottom middle */
+        25% 100%, /* Bottom left */
+        0% 75%,   /* Left middle */
+        0% 25%    /* Top left */
+    );
+    
+    background-color: #ffffff; /* Change background color for visibility */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 10%; /* Optional: add some rounding to the edges */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5); /* Optional: add shadow for 3D effect */
+}
+
+.container h1, 
+.container p {
+    position: relative;
+    z-index: 2; /* Ensure text is on top */
+    color: #ffffff;
+    text-align: center;
+}
+
+h1 {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+}
+
+p {
+    font-size: 1.2rem;
+    max-width: 500px;
+}
+
+/* Animation for spinning logo */
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}

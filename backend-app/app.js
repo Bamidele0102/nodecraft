@@ -20,6 +20,8 @@ app.use(express.json());
 app.use(cors());
 app.use(helmet({ contentSecurityPolicy: false })); // Adjust CSP as needed
 app.use(morgan('combined', { stream: logger.stream }));
+
+// Serve static files from the 'public' directory
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Validate environment variables
@@ -47,9 +49,9 @@ app.get('/favicon.ico', (req, res) => res.sendFile(path.join(__dirname, 'public'
 // Health check
 app.get('/health', (req, res) => res.status(200).send('API is healthy'));
 
-// Root route
+// Root route (Serves the landing page)
 app.get('/', (req, res) => {
-  res.send('Welcome to the API');
+  res.sendFile(path.join(__dirname, 'public', 'index.html')); // Ensure this serves your landing page
 });
 
 // Error handling middleware
