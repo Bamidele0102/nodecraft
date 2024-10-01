@@ -58,7 +58,7 @@ pipeline {
                             
                             // Correctly format the docker build command with build arguments
                             dockerImage = docker.build("bamidele0102/backend-app:${env.IMAGE_VERSION}", 
-                                "--build-arg MONGO_URI='${MONGO_URI}' --build-arg JWT_SECRET='${JWT_SECRET}' .")
+                                                        "--build-arg MONGO_URI=${MONGO_URI} --build-arg JWT_SECRET=${JWT_SECRET} .")
                         }
                     }
                 }
@@ -80,7 +80,7 @@ pipeline {
                 dir('backend-app') {
                     sshagent(credentials: ['your-ssh-credentials-id']) {
                         sh """
-                        ssh -o StrictHostKeyChecking=no user@100.25.28.252 << EOF
+                        ssh -o StrictHostKeyChecking=no ubuntu@100.25.28.252 << EOF
                         docker pull bamidele0102/backend-app:${env.IMAGE_VERSION}
                         docker stop backend-app || true
                         docker rm backend-app || true
