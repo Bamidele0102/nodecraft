@@ -2,10 +2,12 @@ pipeline {
     agent any
 
     tools {
-        nodejs 'NodeJS 14'
+        nodejs 'NodeJS 14'  // Ensure NodeJS 14 is installed in Jenkins
     }
 
     environment {
+        MONGO_URI = credentials('MONGO_URI')
+        JWT_SECRET = credentials('JWT_SECRET')
         PORT = '3000'
         PATH = "${env.PATH}:${env.WORKSPACE}/backend-app/node_modules/.bin"
     }
@@ -44,9 +46,8 @@ pipeline {
             steps {
                 dir('backend-app') {
                     script {
-                        // Use withCredentials to securely pass environment variables during the build
                         withCredentials([
-                            string(credentialsId: 'MONGO_URI', variable: 'MONGO_URI'), 
+                            string(credentialsId: 'MONGO_URI', variable: 'MONGO_URI'),
                             string(credentialsId: 'JWT_SECRET', variable: 'JWT_SECRET')
                         ]) {
                             def majorVersion = (env.BUILD_NUMBER.toInteger() / 10).toInteger() + 1
@@ -55,7 +56,7 @@ pipeline {
                             
                             // Include the --build-arg parameters to pass environment variables
                             dockerImage = docker.build("bamidele0102/backend-app:${env.IMAGE_VERSION}", 
-                                                    "--build-arg MONGO_URI=${MONGO_URI} --build-arg JWT_SECRET=${JWT_SECRET} .")
+                                                        "--build-arg MONGO_URI=${MONGO_URI} --build-arg JWT_SECRET=${JWT_SECRET} .")
                         }
                     }
                 }
