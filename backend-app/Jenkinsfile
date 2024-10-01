@@ -39,7 +39,7 @@ pipeline {
                         sh 'npm config set fetch-timeout 60000'
                         echo 'Starting npm install...'
                         
-                        // Retrying npm install up to 3 times with a timeout of 20 min
+                        // Retrying npm install up to 3 times with a timeout of 20 mininutes
                         retry(3) {
                             timeout(time: 20, unit: 'MINUTES') {
                                 sh 'npm install --only=production'
