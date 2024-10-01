@@ -9,6 +9,7 @@ pipeline {
         MONGO_URI = credentials('MONGO_URI')
         JWT_SECRET = credentials('JWT_SECRET')
         PORT = '3000'
+        PATH = "${env.PATH}:${env.WORKSPACE}/backend-app/node_modules/.bin"
     }
 
     stages {
@@ -30,17 +31,9 @@ pipeline {
             steps {
                 dir('backend-app') {
                     script {
-                        // Verify Node.js version
+                        // Verify Node.js and npm versions
                         sh 'node -v'
-
-                        // Reinstall npm
-                        sh 'npm install -g npm@latest'
-
-                        // Verify npm version
-                        sh 'npm -v'
-
-                        // Clean npm cache
-                        sh 'npm cache clean --force'
+                        sh 'npx -v'  // Use npx to verify npm is available
 
                         // Set npm registry and timeout
                         sh 'npm config set registry https://registry.npmjs.org/'
@@ -50,7 +43,7 @@ pipeline {
                         // Retry npm install up to 3 times with a timeout of 20 minutes
                         retry(3) {
                             timeout(time: 20, unit: 'MINUTES') {
-                                sh 'npm install --only=production'
+                                sh 'npx npm install --only=production'
                             }
                         }
 
