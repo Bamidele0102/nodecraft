@@ -34,6 +34,9 @@ pipeline {
             steps {
                 dir('backend-app') {
                     script {
+                        // Update npm to a compatible version
+                        sh 'npm install -g npm@8.19.4'
+
                         // Setting npm registry and fetch timeout
                         sh 'npm config set registry https://registry.npmjs.org/'
                         sh 'npm config set fetch-timeout 60000'
