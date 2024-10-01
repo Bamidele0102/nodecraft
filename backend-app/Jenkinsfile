@@ -34,16 +34,22 @@ pipeline {
             steps {
                 dir('backend-app') {
                     script {
+                        // Update npm to a compatible version
+                        sh 'npm install -g npm@7.24.2'  // Use a different version of npm
+
+                        // Set npm registry and timeout
+                        sh 'npm config set registry https://registry.npmjs.org/'
+                        sh 'npm config set fetch-timeout 60000'
                         echo 'Starting npm install...'
                         
-                        // Retrying npm install up to 3 times with a timeout of 20 mininutes
+                        // Retry npm install up to 3 times with a timeout of 20 minutes
                         retry(3) {
                             timeout(time: 20, unit: 'MINUTES') {
                                 sh 'npm install --only=production'
                             }
                         }
-                        
-                        // Verifying node_modules installation
+
+                        // Verify node_modules installation
                         echo 'Verifying node_modules installation...'
                         sh 'ls -la node_modules || echo "node_modules not found"'
                     }
