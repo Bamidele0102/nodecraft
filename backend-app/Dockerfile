@@ -4,6 +4,10 @@ FROM node:16-alpine AS build
 # Set working directory
 WORKDIR /usr/src/app
 
+# Add argument declarations to accept the build arguments
+ARG MONGO_URI
+ARG JWT_SECRET
+
 # Copy package.json and package-lock.json (if available)
 COPY package*.json ./
 
@@ -12,6 +16,10 @@ RUN npm install
 
 # Copy the rest of the application
 COPY . .
+
+# Set environment variables using the ARG values
+ENV MONGO_URI=$MONGO_URI
+ENV JWT_SECRET=$JWT_SECRET
 
 # Ensure test files are copied
 COPY tests ./tests
