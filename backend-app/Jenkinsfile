@@ -34,9 +34,6 @@ pipeline {
             steps {
                 dir('backend-app') {
                     script {
-                        // Setting npm registry and fetch timeout
-                        sh 'npm config set registry https://registry.npmjs.org/'
-                        sh 'npm config set fetch-timeout 60000'
                         echo 'Starting npm install...'
                         
                         // Retrying npm install up to 3 times with a timeout of 20 mininutes
