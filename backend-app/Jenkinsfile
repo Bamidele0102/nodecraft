@@ -6,6 +6,7 @@ pipeline {
     }
 
     environment {
+        // Use Jenkins credentials for sensitive information
         MONGO_URI = credentials('MONGO_URI')
         JWT_SECRET = credentials('JWT_SECRET')
         PORT = '3000'
@@ -46,6 +47,7 @@ pipeline {
             steps {
                 dir('backend-app') {
                     script {
+                        // Use withCredentials to securely handle sensitive data
                         withCredentials([
                             string(credentialsId: 'MONGO_URI', variable: 'MONGO_URI'),
                             string(credentialsId: 'JWT_SECRET', variable: 'JWT_SECRET')
@@ -54,7 +56,7 @@ pipeline {
                             def minorVersion = env.BUILD_NUMBER.toInteger() % 10
                             env.IMAGE_VERSION = "v${majorVersion}.${minorVersion}"
                             
-                            // Include the --build-arg parameters to pass environment variables
+                            // Correctly format the docker build command
                             dockerImage = docker.build("bamidele0102/backend-app:${env.IMAGE_VERSION}", 
                                                         "--build-arg MONGO_URI=${MONGO_URI} --build-arg JWT_SECRET=${JWT_SECRET} .")
                         }
@@ -119,3 +121,4 @@ pipeline {
         }
     }
 }
+
