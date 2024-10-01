@@ -6,8 +6,6 @@ pipeline {
     }
 
     environment {
-        MONGO_URI = credentials('MONGO_URI')
-        JWT_SECRET = credentials('JWT_SECRET')
         PORT = '3000'
         PATH = "${env.PATH}:${env.WORKSPACE}/backend-app/node_modules/.bin"
     }
@@ -46,13 +44,19 @@ pipeline {
             steps {
                 dir('backend-app') {
                     script {
-                        def majorVersion = (env.BUILD_NUMBER.toInteger() / 10).toInteger() + 1
-                        def minorVersion = env.BUILD_NUMBER.toInteger() % 10
-                        env.IMAGE_VERSION = "v${majorVersion}.${minorVersion}"
-                        
-                        // Include the --build-arg parameters to pass environment variables
-                        dockerImage = docker.build("bamidele0102/backend-app:${env.IMAGE_VERSION}", 
-                                                "--build-arg MONGO_URI=${env.MONGO_URI} --build-arg JWT_SECRET=${env.JWT_SECRET} .")
+                        // Use withCredentials to securely pass environment variables during the build
+                        withCredentials([
+                            string(credentialsId: 'MONGO_URI', variable: 'MONGO_URI'), 
+                            string(credentialsId: 'JWT_SECRET', variable: 'JWT_SECRET')
+                        ]) {
+                            def majorVersion = (env.BUILD_NUMBER.toInteger() / 10).toInteger() + 1
+                            def minorVersion = env.BUILD_NUMBER.toInteger() % 10
+                            env.IMAGE_VERSION = "v${majorVersion}.${minorVersion}"
+                            
+                            // Include the --build-arg parameters to pass environment variables
+                            dockerImage = docker.build("bamidele0102/backend-app:${env.IMAGE_VERSION}", 
+                                                    "--build-arg MONGO_URI=${MONGO_URI} --build-arg JWT_SECRET=${JWT_SECRET} .")
+                        }
                     }
                 }
             }
