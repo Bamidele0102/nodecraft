@@ -56,7 +56,7 @@ pipeline {
                             def minorVersion = env.BUILD_NUMBER.toInteger() % 10
                             env.IMAGE_VERSION = "v${majorVersion}.${minorVersion}"
                             
-                            // Correctly format the docker build command
+                            // Correctly format the docker build command with build arguments
                             dockerImage = docker.build("bamidele0102/backend-app:${env.IMAGE_VERSION}", 
                                                         "--build-arg MONGO_URI=${MONGO_URI} --build-arg JWT_SECRET=${JWT_SECRET} .")
                         }
@@ -121,4 +121,3 @@ pipeline {
         }
     }
 }
-
