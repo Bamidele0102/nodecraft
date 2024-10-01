@@ -30,8 +30,13 @@ pipeline {
             steps {
                 dir('backend-app') {
                     script {
-                        // Verify Node.js and npm versions
+                        // Verify Node.js version
                         sh 'node -v'
+
+                        // Reinstall npm
+                        sh 'npm install -g npm@latest'
+
+                        // Verify npm version
                         sh 'npm -v'
 
                         // Clean npm cache
